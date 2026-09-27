@@ -65,7 +65,7 @@ export const LoginScreen: React.FC = () => {
           </h1>
           <p className="text-sm sm:text-base text-slate-400 mt-1 flex items-center justify-center gap-1.5 font-medium">
             <Sparkles className="w-4 h-4 text-cyan-400" />
-            Vũ trụ Toán học dành cho học sinh THCS
+            Vũ trụ Toán học THCS • Bộ sách Kết nối tri thức
           </p>
         </div>
 

@@ -18,6 +18,7 @@ import {
   BarChart,
 } from 'lucide-react';
 import { soundManager } from '../utils/soundEffects';
+import { formatMathNotation } from '../utils/formatMath';
 
 export const QuizExamMode: React.FC = () => {
   const { user, addXp, setActiveTab, setSelectedLessonId, recordQuestionResult } = useMathVerse();
@@ -398,8 +399,8 @@ export const QuizExamMode: React.FC = () => {
           </h2>
 
           {currentQ.mathExpression && (
-            <div className="p-3 rounded-xl bg-slate-950 font-mono text-cyan-300 text-base border border-slate-800 text-center font-bold">
-              {currentQ.mathExpression}
+            <div className="p-3 rounded-xl bg-slate-950 font-mono text-cyan-300 text-base border border-slate-800 text-center font-bold tracking-wide">
+              {formatMathNotation(currentQ.mathExpression)}
             </div>
           )}
         </div>

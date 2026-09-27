@@ -14,9 +14,11 @@ import {
   Music,
   Headphones,
   Sparkles,
+  Lock,
 } from 'lucide-react';
 import { soundManager } from '../utils/soundEffects';
 import { musicPlayer, MUSIC_TRACKS } from '../utils/musicPlayer';
+import { isGradeUnlocked } from '../data/promotionExamsData';
 
 const AVATARS = ['👨‍🚀', '👩‍🚀', '🦉', '🤖', '🦊', '⭐'];
 
@@ -28,6 +30,7 @@ export const SettingsModal: React.FC = () => {
     updateProfile,
     resetAllData,
     logout,
+    setLockedGradeAttempt,
   } = useMathVerse();
 
   const [name, setName] = useState(user?.name || '');
@@ -246,24 +249,41 @@ export const SettingsModal: React.FC = () => {
           {/* Grade Selector */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
-              Lớp đang học
+              Lớp đang học (Bộ sách Kết nối tri thức)
             </label>
             <div className="grid grid-cols-4 gap-2">
-              {([6, 7, 8, 9] as Grade[]).map((g) => (
-                <button
-                  type="button"
-                  key={g}
-                  onClick={() => setSelectedGrade(g)}
-                  className={`p-3 rounded-xl border font-bold text-sm transition-all cursor-pointer ${
-                    selectedGrade === g
-                      ? 'bg-indigo-600 text-white border-indigo-400'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                  }`}
-                >
-                  Lớp {g}
-                </button>
-              ))}
+              {([6, 7, 8, 9] as Grade[]).map((g) => {
+                const unlocked = isGradeUnlocked(user, g);
+                return (
+                  <button
+                    type="button"
+                    key={g}
+                    onClick={() => {
+                      if (unlocked) {
+                        setSelectedGrade(g);
+                        soundManager.playClickSound();
+                      } else {
+                        soundManager.playWrongSound();
+                        setLockedGradeAttempt(g);
+                      }
+                    }}
+                    className={`p-3 rounded-xl border font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                      selectedGrade === g
+                        ? 'bg-indigo-600 text-white border-indigo-400 shadow-md'
+                        : unlocked
+                        ? 'bg-slate-950 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
+                        : 'bg-slate-950/40 border-slate-800/80 text-slate-500 hover:text-slate-400'
+                    }`}
+                  >
+                    <span>Lớp {g}</span>
+                    {!unlocked && <Lock className="w-3 h-3 text-amber-400" />}
+                  </button>
+                );
+              })}
             </div>
+            <p className="text-[11px] text-slate-400 mt-1.5">
+              * Để mở khóa lớp cao hơn, em cần vượt qua bài tập tổng hợp Kết nối tri thức của các lớp trước đó.
+            </p>
           </div>
 
           {/* Save Button */}

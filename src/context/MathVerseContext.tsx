@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Grade, UserProfile, MistakeRecord } from '../types/mathverse';
 import { BADGES_DATA, getUserLevel } from '../data/badgesData';
 import { soundManager } from '../utils/soundEffects';
+import { isGradeUnlocked } from '../data/promotionExamsData';
 
 interface MathVerseContextType {
   user: UserProfile | null;
@@ -11,6 +12,10 @@ interface MathVerseContextType {
   setSelectedLessonId: (id: string | null) => void;
   selectedPracticeTopic: string | null;
   setSelectedPracticeTopic: (topic: string | null) => void;
+  lockedGradeAttempt: Grade | null;
+  setLockedGradeAttempt: (grade: Grade | null) => void;
+  activePromotionExamGrade: Grade | null;
+  setActivePromotionExamGrade: (grade: Grade | null) => void;
   login: (name: string, grade: Grade, avatar: string) => void;
   logout: () => void;
   addXp: (amount: number, reason?: string) => void;
@@ -27,6 +32,7 @@ interface MathVerseContextType {
   ) => void;
   toggleSound: () => void;
   updateGrade: (grade: Grade) => void;
+  unlockGrade: (sourceGrade: Grade, nextGrade: Grade, score: number, total: number) => void;
   updateProfile: (name: string, avatar: string) => void;
   resetAllData: () => void;
   recentXpGained: { amount: number; reason?: string } | null;
@@ -57,6 +63,8 @@ const defaultProfile: UserProfile = {
   },
   recentMistakes: [],
   soundEnabled: true,
+  unlockedGrades: [6],
+  completedGradeExams: {},
 };
 
 const MathVerseContext = createContext<MathVerseContextType | undefined>(undefined);
@@ -85,6 +93,8 @@ export const MathVerseProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           return {
             ...defaultProfile,
             ...parsed,
+            unlockedGrades: parsed.unlockedGrades || [6],
+            completedGradeExams: parsed.completedGradeExams || {},
             streak,
             lastActiveDate: today,
           };
@@ -101,6 +111,10 @@ export const MathVerseProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [selectedPracticeTopic, setSelectedPracticeTopic] = useState<string | null>(null);
   const [recentXpGained, setRecentXpGained] = useState<{ amount: number; reason?: string } | null>(null);
   const [newBadgeUnlocked, setNewBadgeUnlocked] = useState<string | null>(null);
+
+  // State for locked grade attempt and active promotion exam
+  const [lockedGradeAttempt, setLockedGradeAttempt] = useState<Grade | null>(null);
+  const [activePromotionExamGrade, setActivePromotionExamGrade] = useState<Grade | null>(null);
 
   // Sync with sound manager
   useEffect(() => {
@@ -136,12 +150,31 @@ export const MathVerseProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const login = (name: string, grade: Grade, avatar: string) => {
+    const today = new Date().toISOString().split('T')[0];
+    const unlockedGrades: Grade[] = [6];
+    const completedGradeExams: Record<number, any> = {};
+
+    if (grade >= 7) {
+      unlockedGrades.push(7);
+      completedGradeExams[6] = { passed: true, score: 9, total: 10, date: today };
+    }
+    if (grade >= 8) {
+      unlockedGrades.push(8);
+      completedGradeExams[7] = { passed: true, score: 9, total: 10, date: today };
+    }
+    if (grade >= 9) {
+      unlockedGrades.push(9);
+      completedGradeExams[8] = { passed: true, score: 9, total: 10, date: today };
+    }
+
     const newUser: UserProfile = {
       ...defaultProfile,
       name,
       grade,
       avatar,
-      lastActiveDate: new Date().toISOString().split('T')[0],
+      unlockedGrades,
+      completedGradeExams,
+      lastActiveDate: today,
       streak: 1,
     };
     setUser(newUser);
@@ -266,8 +299,51 @@ export const MathVerseProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     });
   };
 
-  const updateGrade = (grade: Grade) => {
-    setUser((prev) => (prev ? { ...prev, grade } : null));
+  const updateGrade = (targetGrade: Grade) => {
+    if (!user) return;
+    if (isGradeUnlocked(user, targetGrade)) {
+      setUser((prev) => (prev ? { ...prev, grade: targetGrade } : null));
+      soundManager.playClickSound();
+    } else {
+      // Grade is locked! Trigger modal prompt
+      soundManager.playWrongSound();
+      setLockedGradeAttempt(targetGrade);
+    }
+  };
+
+  const unlockGrade = (sourceGrade: Grade, nextGrade: Grade, score: number, total: number) => {
+    if (!user) return;
+    const today = new Date().toISOString().split('T')[0];
+    soundManager.triggerBigCelebration();
+
+    setUser((prev) => {
+      if (!prev) return null;
+      const currentUnlocked = new Set(prev.unlockedGrades || [6]);
+      currentUnlocked.add(nextGrade);
+
+      const updatedExams = {
+        ...(prev.completedGradeExams || {}),
+        [sourceGrade]: {
+          passed: true,
+          score,
+          total,
+          date: today,
+        },
+      };
+
+      const updated: UserProfile = {
+        ...prev,
+        grade: nextGrade, // Automatically switch to the newly unlocked grade
+        xp: prev.xp + 150,
+        unlockedGrades: Array.from(currentUnlocked) as Grade[],
+        completedGradeExams: updatedExams,
+      };
+
+      return checkBadgeUnlocks(updated);
+    });
+
+    setRecentXpGained({ amount: 150, reason: `Mở khóa thành công Lớp ${nextGrade}` });
+    setTimeout(() => setRecentXpGained(null), 3500);
   };
 
   const updateProfile = (name: string, avatar: string) => {
@@ -300,6 +376,10 @@ export const MathVerseProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         setSelectedLessonId,
         selectedPracticeTopic,
         setSelectedPracticeTopic,
+        lockedGradeAttempt,
+        setLockedGradeAttempt,
+        activePromotionExamGrade,
+        setActivePromotionExamGrade,
         login,
         logout,
         addXp,
@@ -307,6 +387,7 @@ export const MathVerseProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         recordQuestionResult,
         toggleSound,
         updateGrade,
+        unlockGrade,
         updateProfile,
         resetAllData,
         recentXpGained,

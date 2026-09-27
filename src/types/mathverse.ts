@@ -56,6 +56,9 @@ export interface LessonFormula {
 export interface Lesson {
   id: string;
   grade: Grade;
+  bookVolume?: 1 | 2; // Tập 1 hoặc Tập 2
+  chapter?: string;   // Ví dụ: Chương I, Chương VI
+  lessonNumber?: number; // Số bài trong SGK: Bài 1, Bài 2...
   topic: string;
   title: string;
   objective: string;
@@ -92,6 +95,21 @@ export interface UserProfile {
   topicStats: Record<string, { correct: number; total: number }>;
   recentMistakes: MistakeRecord[];
   soundEnabled: boolean;
+  unlockedGrades: Grade[];
+  completedGradeExams: Record<number, { passed: boolean; score: number; total: number; date: string }>;
+}
+
+export interface PromotionExam {
+  id: string;
+  sourceGrade: Grade;
+  unlocksGrade: Grade;
+  prerequisiteGrades: Grade[];
+  title: string;
+  subtitle: string;
+  bookSeries: string;
+  passingScorePercent: number;
+  questions: Question[];
+  xpReward: number;
 }
 
 export interface BadgeInfo {

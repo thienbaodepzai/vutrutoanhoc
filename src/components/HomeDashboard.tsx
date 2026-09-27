@@ -2,6 +2,7 @@ import React from 'react';
 import { useMathVerse } from '../context/MathVerseContext';
 import { CURRICULUM_DATA } from '../data/curriculumData';
 import { getUserLevel } from '../data/badgesData';
+import { isGradeUnlocked, PROMOTION_EXAMS } from '../data/promotionExamsData';
 import {
   BookOpen,
   PenTool,
@@ -16,11 +17,12 @@ import {
   Flame,
   CheckCircle2,
   TrendingUp,
+  Lock,
 } from 'lucide-react';
 import { soundManager } from '../utils/soundEffects';
 
 export const HomeDashboard: React.FC = () => {
-  const { user, setActiveTab, setSelectedLessonId } = useMathVerse();
+  const { user, setActiveTab, setSelectedLessonId, setActivePromotionExamGrade, setLockedGradeAttempt } = useMathVerse();
 
   if (!user) return null;
 
@@ -37,6 +39,8 @@ export const HomeDashboard: React.FC = () => {
 
   // Recommendations: pick first uncompleted lesson in current grade
   const nextLesson = gradeLessons.find((l) => !user.completedLessons.includes(l.id)) || gradeLessons[0];
+  const nextGrade = (user.grade < 9 ? (user.grade + 1) : 9) as 6 | 7 | 8 | 9;
+  const isNextGradeUnlocked = isGradeUnlocked(user, nextGrade);
 
   const handleNav = (tab: string) => {
     soundManager.playClickSound();
@@ -214,6 +218,63 @@ export const HomeDashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Promotion Exam Milestone Card */}
+      {user.grade < 9 && (
+        <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-950/40 via-slate-900 to-indigo-950/50 border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-300 shrink-0">
+              <Award className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-white">
+                  Mục tiêu mở khóa Lớp {nextGrade} (Bộ sách Kết nối tri thức)
+                </span>
+                {isNextGradeUnlocked ? (
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
+                    Đã mở khóa
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold flex items-center gap-1">
+                    <Lock className="w-3 h-3" /> Đang khóa
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-300 mt-0.5">
+                {isNextGradeUnlocked
+                  ? `Lớp ${nextGrade} đã sẵn sàng! Em có thể chuyển sang học bất cứ lúc nào.`
+                  : `Cần vượt qua Bài tập tổng hợp Toán ${user.grade} (KNTT) đạt từ 70% trở lên để lên Lớp ${nextGrade}.`}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+            {!isNextGradeUnlocked ? (
+              <button
+                onClick={() => {
+                  soundManager.playClickSound();
+                  setActivePromotionExamGrade(user.grade);
+                }}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold text-xs shadow-md shadow-amber-500/20 flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Thi vượt cấp lên Lớp {nextGrade}</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  soundManager.playClickSound();
+                  setActiveTab('lessons');
+                }}
+                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs cursor-pointer"
+              >
+                Vào học Lớp {nextGrade}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Main Navigation Grid (Large Interactive Cards) */}
       <div>

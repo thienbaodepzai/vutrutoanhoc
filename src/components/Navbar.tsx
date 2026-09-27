@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useMathVerse } from '../context/MathVerseContext';
 import { getUserLevel, getNextLevel } from '../data/badgesData';
-import { Volume2, VolumeX, Flame, Award, ChevronDown, Rocket, Sparkles, Settings as SettingsIcon, Music, Pause } from 'lucide-react';
+import { Volume2, VolumeX, Flame, Award, ChevronDown, Rocket, Sparkles, Settings as SettingsIcon, Music, Pause, Lock } from 'lucide-react';
 import { Grade } from '../types/mathverse';
 import { soundManager } from '../utils/soundEffects';
 import { musicPlayer } from '../utils/musicPlayer';
+import { isGradeUnlocked } from '../data/promotionExamsData';
 
 export const Navbar: React.FC = () => {
   const {
@@ -85,21 +86,29 @@ export const Navbar: React.FC = () => {
               </button>
 
               {gradeDropdownOpen && (
-                <div className="absolute left-0 mt-2 w-32 bg-slate-900 border border-slate-700/80 rounded-xl shadow-xl shadow-slate-950/80 p-1.5 z-50 animate-in fade-in zoom-in-95">
-                  {([6, 7, 8, 9] as Grade[]).map((g) => (
-                    <button
-                      key={g}
-                      onClick={() => handleGradeSelect(g)}
-                      className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-between cursor-pointer ${
-                        user.grade === g
-                          ? 'bg-indigo-600/30 text-cyan-300'
-                          : 'text-slate-300 hover:bg-slate-800'
-                      }`}
-                    >
-                      <span>Lớp {g}</span>
-                      {user.grade === g && <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />}
-                    </button>
-                  ))}
+                <div className="absolute left-0 mt-2 w-36 bg-slate-900 border border-slate-700/80 rounded-xl shadow-xl shadow-slate-950/80 p-1.5 z-50 animate-in fade-in zoom-in-95">
+                  {([6, 7, 8, 9] as Grade[]).map((g) => {
+                    const unlocked = isGradeUnlocked(user, g);
+                    return (
+                      <button
+                        key={g}
+                        onClick={() => handleGradeSelect(g)}
+                        className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-between cursor-pointer ${
+                          user.grade === g
+                            ? 'bg-indigo-600/30 text-cyan-300'
+                            : unlocked
+                            ? 'text-slate-300 hover:bg-slate-800'
+                            : 'text-slate-500 hover:bg-slate-800/60'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <span>Lớp {g}</span>
+                          {!unlocked && <Lock className="w-3 h-3 text-amber-400" />}
+                        </div>
+                        {user.grade === g && <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>

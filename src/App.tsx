@@ -13,6 +13,8 @@ import { AchievementsView } from './components/AchievementsView';
 import { ProgressAnalyticsView } from './components/ProgressAnalyticsView';
 import { SettingsModal } from './components/SettingsModal';
 import { MusicPlayerWidget } from './components/MusicPlayerWidget';
+import { GradePromotionModal } from './components/GradePromotionModal';
+import { GradePromotionQuiz } from './components/GradePromotionQuiz';
 import {
   Home,
   BookOpen,
@@ -27,7 +29,15 @@ import {
 import { soundManager } from './utils/soundEffects';
 
 const MainAppContent: React.FC = () => {
-  const { user, activeTab, setActiveTab } = useMathVerse();
+  const {
+    user,
+    activeTab,
+    setActiveTab,
+    lockedGradeAttempt,
+    setLockedGradeAttempt,
+    activePromotionExamGrade,
+    setActivePromotionExamGrade,
+  } = useMathVerse();
 
   if (!user) {
     return <LoginScreen />;
@@ -102,6 +112,26 @@ const MainAppContent: React.FC = () => {
 
       {/* Floating Background Study Music Player */}
       <MusicPlayerWidget />
+
+      {/* Grade Promotion Modal when attempting to switch to a locked grade */}
+      {lockedGradeAttempt && (
+        <GradePromotionModal
+          targetGrade={lockedGradeAttempt}
+          onClose={() => setLockedGradeAttempt(null)}
+          onStartExam={(gradeToTake) => {
+            setLockedGradeAttempt(null);
+            setActivePromotionExamGrade(gradeToTake);
+          }}
+        />
+      )}
+
+      {/* Active Promotion Exam Quiz */}
+      {activePromotionExamGrade && (
+        <GradePromotionQuiz
+          sourceGrade={activePromotionExamGrade}
+          onClose={() => setActivePromotionExamGrade(null)}
+        />
+      )}
 
       {/* Mobile Bottom Navigation Bar */}
       <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/90 backdrop-blur-xl border-t border-slate-800 px-2 py-1.5 flex items-center justify-around">

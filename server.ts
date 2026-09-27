@@ -114,21 +114,21 @@ NGUYÊN TẮC GIẢNG BÀI:
     if (q.includes('phân số') || q.includes('quy đồng') || q.includes('mẫu số')) {
       return `✨ **Bí quyết với Phân số:**\n\n` +
         `**1. Vì sao 2 phân số bằng nhau?**\n` +
-        `Hai phân số $\\frac{a}{b} = \\frac{c}{d}$ khi và chỉ khi tích chéo bằng nhau: $a \\cdot d = b \\cdot c$.\n\n` +
+        `Hai phân số a/b = c/d khi và chỉ khi tích chéo bằng nhau: a . d = b . c.\n\n` +
         `**2. Quy đồng mẫu số 3 bước cực dễ:**\n` +
         `• **Bước 1:** Tìm Mẫu số chung (thường là BCNN của các mẫu số).\n` +
         `• **Bước 2:** Tìm thừa số phụ bằng cách lấy Mẫu chung chia cho từng mẫu.\n` +
         `• **Bước 3:** Nhân cả tử và mẫu với thừa số phụ tương ứng.\n\n` +
-        `💡 *Ví dụ:* Cộng $\\frac{1}{2} + \\frac{1}{3} = \\frac{3}{6} + \\frac{2}{6} = \\frac{5}{6}$. Em đã hiểu chưa nào?`;
+        `💡 *Ví dụ:* Cộng 1/2 + 1/3 = 3/6 + 2/6 = 5/6. Em đã hiểu chưa nào?`;
     }
 
     if (q.includes('hình thang') || q.includes('diện tích hình thang')) {
       return `✨ **Công thức diện tích hình thang:**\n\n` +
         `📐 **Công thức:**\n` +
-        `$$S = \\frac{(a + b) \\times h}{2}$$\n` +
+        `S = [(a + b) . h] / 2\n` +
         `Trong đó:\n` +
-        `• $a$: đáy nhỏ, $b$: đáy lớn (cùng đơn vị đo)\n` +
-        `• $h$: chiều cao tương ứng\n\n` +
+        `• a: đáy nhỏ, b: đáy lớn (cùng đơn vị đo)\n` +
+        `• h: chiều cao tương ứng\n\n` +
         `🎵 *Bài thơ nhớ nhanh:* \n` +
         `"Muốn tính diện tích hình thang\n` +
         `Đáy lớn đáy nhỏ ta mang cộng vào\n` +

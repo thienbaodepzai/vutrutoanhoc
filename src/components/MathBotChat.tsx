@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useMathVerse } from '../context/MathVerseContext';
 import { Bot, Send, Sparkles, User, Lightbulb, Trash2, ArrowUpRight } from 'lucide-react';
 import { soundManager } from '../utils/soundEffects';
+import { formatMathNotation } from '../utils/formatMath';
 
 interface ChatMessage {
   id: string;
@@ -12,7 +13,7 @@ interface ChatMessage {
 
 const PRESET_QUESTIONS = [
   'Giải phương trình này giúp em: 2x + 5 = 15',
-  'Vì sao hai số âm nhân với nhau lại ra số dương? [(-3) · (-4) = 12]',
+  'Vì sao hai số âm nhân với nhau lại ra số dương? [(-3) . (-4) = 12]',
   'Cách tính diện tích hình thang và mẹo ghi nhớ bằng thơ?',
   'Định lý Pythagore là gì và áp dụng trong tam giác vuông thế nào?',
   'Quy tắc quy đồng mẫu số nhiều phân số gồm những bước nào?',
@@ -86,7 +87,7 @@ export const MathBotChat: React.FC = () => {
       const botMsg: ChatMessage = {
         id: `bot-${Date.now()}`,
         role: 'assistant',
-        content: botReply,
+        content: formatMathNotation(botReply),
         timestamp: Date.now(),
       };
 
